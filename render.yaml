@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: fastapi-test-app
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT"
+    plan: free
