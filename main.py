@@ -16,6 +16,7 @@ origins = [
     "http://localhost",
     "http://127.0.0.1",
     "null",  # Important for opening the HTML file directly
+    "*"
 ]
 
 app.add_middleware(
@@ -62,6 +63,34 @@ async def upload_audio(audio: UploadFile = File(...)):
     finally:
         # Close the file to release resources
         audio.file.close()
+
+
+@app.get("/recordings")
+async def get_all_recordings():
+    """
+    Fetches a list of all audio recordings in the SAVE_DIRECTORY.
+    """
+    try:
+        # List all .wav files in the SAVE_DIRECTORY
+        recordings = [file.name for file in SAVE_DIRECTORY.glob("*.wav")]
+        return {"status": "success", "recordings": recordings}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.delete("/recordings/{filename}")
+async def delete_recording(filename: str):
+    """
+    Deletes a specific audio recording from the SAVE_DIRECTORY.
+    """
+    try:
+        file_path = SAVE_DIRECTORY / filename
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()  # Deletes the file
+            return {"status": "success", "message": f"{filename} deleted successfully."}
+        else:
+            return {"status": "error", "message": "File not found."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
         
 @app.get("/status")
 async def status():
